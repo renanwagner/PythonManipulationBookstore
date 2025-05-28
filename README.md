@@ -6,90 +6,111 @@ This project is divided into two main parts:
 
 ## Data Cleaning and Transformation (tratamento_dados.py)
 
-# 📥 How coleta_dados.py Works
-###] This script handles the selection and collection of book data from the web, using the libraries requests, BeautifulSoup, and pandas.
+#  How coleta_dados.py Works
+ This script handles the selection and collection of book data from the web, using the libraries requests, BeautifulSoup, and pandas.
 
-##🔧 Main Functions
+ Module 1: Data Extraction (extracao.py)
+This script handles the extraction of data directly from the website, organizing and storing key book information.
+
+ Main Functions
 extracao
-Extract data from the website by reading the HTML content.
+Extracts data from the web page using requests and BeautifulSoup.
 
-titulos.append
-Collect all book titles found in <h3> tags.
+titulos.append()
+Collects all book titles found in specific HTML tags.
 
-precos.append
-Capture all prices identified by the 'price_color' class, clean them using .strip(), and associate each value with livro['Preço'].
+precos.append()
+Captures all prices found under the price_color class, cleans them using .strip(), and stores them in the livro['Preço'] field.
 
-catalogo.append & contar_livros += 1
-Count and store each unique book found in the store, incrementing the counter for every identified product.
+catalogo.append() & contar_livros += 1
+Appends each identified book to the catalog and increments the total count of books.
 
-✅ Finish by printing the results of all these operations.
+ Final Output
+At the end of execution, the script prints all collected titles, prices, and the total number of books found.
 
-🧹 How tratamento_dados.py Works
+ Module 2: Data Cleaning and Analysis (tratamento_dados.py)
 This script performs data cleaning, transformation, and basic exploratory analysis using pandas.
 
-🔄 Step-by-step Process
-📂 Load the Dataset
+ Step-by-Step Process
+ 1. Load the Dataset
 Load the CSV file into a pandas DataFrame using:
 
 python
 Copiar
 Editar
 pd.read_csv()
-🧪 Check Structure and Quality
-Check the number of rows and columns using .shape.
-
-Check the data types of each column with .dtypes.
-
-Count missing values in each column using .isnull().sum().
-
-🧼 Handle Missing Data
-Replace missing values in the 'Temporada' and 'Marca' columns with 'Não Definido' using:
+ 2. Inspect Data Structure and Quality
+Get the number of rows and columns:
 
 python
 Copiar
 Editar
-.fillna()
-🔠 Standardize Text Columns
-Convert the following columns to lowercase using .str.lower():
-
-'Marca'
-
-'Material'
-
-'Temporada'
-
-🧹 Remove Redundant or Incomplete Data
-Remove duplicate rows using:
+df.shape
+Check data types of each column:
 
 python
 Copiar
 Editar
-.drop_duplicates()
-Remove rows with fewer than 8 non-null values using:
+df.dtypes
+Count missing values in each column:
 
 python
 Copiar
 Editar
-.dropna(thresh=8)
-🚨 Detect and Isolate Outliers
-Calculate the Interquartile Range (IQR) for the 'N_Avaliacoes' column.
-
-Define an upper threshold as:
+df.isnull().sum()
+ 3. Handle Missing Data
+Replace missing values in Temporada and Marca with 'Not Defined':
 
 python
 Copiar
 Editar
-Q3 + 1.5 * IQR
-Filter products that exceed this threshold to identify outliers or highly-reviewed items.
+df['Temporada'].fillna('Not Defined', inplace=True)
+df['Marca'].fillna('Not Defined', inplace=True)
+ 4. Standardize Text Columns
+Convert the following columns to lowercase:
 
-🧩 Parse and Transform Complex Columns
-Extract the first segment (before '|') from the 'Condicao' column and store it in 'Condicao_Atual'.
+python
+Copiar
+Editar
+df['Marca'] = df['Marca'].str.lower()
+df['Material'] = df['Material'].str.lower()
+df['Temporada'] = df['Temporada'].str.lower()
+ 5. Remove Redundant or Incomplete Data
+Remove duplicate rows:
 
-Extract the quantity of units sold from the second segment of 'Condicao', or return 'Nenhum' if unavailable. Store the result in 'Qtd_Vendidos'.
+python
+Copiar
+Editar
+df.drop_duplicates(inplace=True)
+Drop rows with fewer than 8 non-null values:
 
-Convert the 'Desconto' column to string format and remove the % symbol using a lambda function.
+python
+Copiar
+Editar
+df.dropna(thresh=8, inplace=True)
+ 6. Detect and Isolate Outliers
+Calculate the Interquartile Range (IQR) for the N_Avaliacoes column and identify high-outlier products:
 
-📌 Technologies Used
+python
+Copiar
+Editar
+Q1 = df['N_Avaliacoes'].quantile(0.25)
+Q3 = df['N_Avaliacoes'].quantile(0.75)
+IQR = Q3 - Q1
+upper_threshold = Q3 + 1.5 * IQR
+outliers = df[df['N_Avaliacoes'] > upper_threshold]
+ 7. Parse and Transform Complex Columns
+Extract the first segment (before '|') from the Condicao column as Condicao_Atual.
+
+Extract the number of units sold from the second segment or set 'None' if unavailable, saving it as Qtd_Vendidos.
+
+Convert the Desconto column to string and remove the % symbol:
+
+python
+Copiar
+Editar
+df['Desconto'] = df['Desconto'].astype(str).apply(lambda x: x.replace('%', ''))
+Technologies Used
 Python 3.x
 
 pandas
